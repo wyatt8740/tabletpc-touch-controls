@@ -23,6 +23,9 @@ palm, hand, and/or wrist on the screen while using the stylus)
 7. Switching between windows in FVWM without having a window list bar
 constantly take up precious space
 
+Some of these are mapped directly to the keys on the bezel; however, I reserved
+one so that I could make a software menu to supplement the list of actions.
+
 After not finding much in the way of tools that can do this for unix systems
 (possibly because I don't know what to search for?), I rolled my own ugly
 python thing. I am not really a Python programmer at heart, but it seemed
