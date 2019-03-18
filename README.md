@@ -44,7 +44,9 @@ so that it stays on top.
    initial prototype, which is what this code drop represents as of now.
    * If using FVWM, my config contains the following three rules:
 
-    Style TabletPC_Applet_Menu NeverFocus, StaysOnTop, Sticky
+```
+Style TabletPC_Applet_Menu NeverFocus, StaysOnTop, Sticky
+```
 
 * Not every action has an icon
    * Since I am drawing all of the icons myself, and that takes time, I haven't
