@@ -11,7 +11,7 @@ buttons usable (plus the power button, I suppose, if I wanted to remap it)
 when my tablet is being used as a tablet instead of as a laptop.
 
 Unfortunately, I already had more than four functions I wished to use in tablet
-mode on day 1! These include:
+mode on day one! These include:
 
 1. Toggling the touch screen digitizer portion on and off (so I can rest my
 palm, hand, and/or wrist on the screen while using the stylus)
