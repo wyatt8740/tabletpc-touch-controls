@@ -34,7 +34,7 @@ class TabletApplet(Gtk.Window):
         vbox.pack_start(button, True, True, 0)
 
 #       unclutter on/off
-        button=Gtk.Button(label="Clutter")
+        button=Gtk.Button(label="Unclutter")
         button.connect("clicked", self.toggleUnclutter)
         vbox.pack_start(button, True, True, 0)
 
