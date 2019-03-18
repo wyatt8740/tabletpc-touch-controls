@@ -1,0 +1,16 @@
+#! /bin/bash
+# run unclutter, or kill it if it's running
+DISPLAY=:0
+export DISPLAY=:0
+PROGNAME="unclutter"
+PARAMS="-idle 0.25 -root"
+if [ -z `/usr/bin/pgrep "$PROGNAME"` ]; then
+    #zenity --info --text="florence not running. Starting."
+    "$PROGNAME" $PARAMS & disown
+else
+    #zenity --info --text="florence is running"
+    pkill "$PROGNAME"
+fi
+
+
+/usr/bin/true

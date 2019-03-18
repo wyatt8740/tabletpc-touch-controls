@@ -1,0 +1,8 @@
+#! /bin/bash
+CURBRIGHT="`cat /sys/class/backlight/acpi_video0/brightness`"
+MAXBRIGHT="`cat /sys/class/backlight/acpi_video0/max_brightness`"
+if [ "$CURBRIGHT" -lt "$MAXBRIGHT" ]; then
+  CURBRIGHT="$(expr "$CURBRIGHT" '+' '1')"
+  echo "$CURBRIGHT" > /sys/class/backlight/acpi_video0/brightness
+fi
+

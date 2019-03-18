@@ -1,0 +1,25 @@
+#! /bin/bash
+# calibrate wacom digitizer (x201 tablet) touch/stylus
+xsetwacom set 'Wacom Serial Penabled 2FG Touchscreen Pen stylus' Area 0 137 26130 16293
+# much nicer (in portrait mode at least). Amalgamated from multiple calibration sessions and
+# a little manual adjustment.
+#xsetwacom set 'Wacom Serial Penabled 2FG Touchscreen Pen stylus' Area 0 280 26130 16348
+#xsetwacom set 'Wacom Serial Penabled 2FG Touchscreen Pen eraser' Area 0 137 26130 16293
+# udpdated:
+xsetwacom set 'Wacom Serial Penabled 2FG Touchscreen Pen eraser' Area 0 280 26130 16348
+xsetwacom set 'Wacom Serial Penabled 2FG Touchscreen Finger touch' Area 0 137 26130 16293
+
+# color calibration
+# Internal LCD (not sure this profile does anything):
+xcalib -d :0 -s 0 -o 0 /home/wyatt/icc/TPLCD.ICM
+
+# U2412M monitor:
+# calibrated at:
+#brightness:             35
+#contrast:               75
+#custom color mode
+#R/G/B:                  98/90/92
+xcalib -d :0 -s 0 -o 1 /home/wyatt/icc/dell_u2412m_custom.icc
+
+# don't fail
+true
