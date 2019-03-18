@@ -42,6 +42,10 @@ so that it stays on top.
    Python 3's GTK3 library, or if I'll need to use XCB stuff. Since I can do
    this via fvwm's config file on my system, it wasn't necessary for my
    initial prototype, which is what this code drop represents as of now.
+   * If using FVWM, my config contains the following three rules:
+
+    Style TabletPC_Applet_Menu NeverFocus, StaysOnTop, Sticky
+
 * Not every action has an icon
    * Since I am drawing all of the icons myself, and that takes time, I haven't
    drawn all of the icons for all of the actions yet.
