@@ -98,7 +98,7 @@ class TabletApplet(Gtk.Window):
     def toggleUnclutter(self, widget):
         subprocess.run("uc-toggle")
 
-    def calib():
+    def calib(self, widget):
         subprocess.run("calib")
 
 win=TabletApplet()
