@@ -50,7 +50,12 @@ Style TabletPC_Applet_Menu NeverFocus, StaysOnTop, Sticky, !Button 4, !Button 2,
 
 * Not every action has an icon
    * Since I am drawing all of the icons myself, and that takes time, I haven't
-   drawn all of the icons for all of the actions yet.
+   drawn all of the icons for all of the actions yet. It's especially time
+   consuming since I decided (for some reason I'm not even sure of) to manually
+   redraw all the icons at 16x16 px, like how Microsoft did in the old days for
+   it's operating systems. I really don't know if there are any tablets with
+   DPI low enough for 16x16 px to make sense, even, but some of the icons
+   themselves might be re-usable in other places or projects.
 * Hardcoded stuff all over the scripts that I run
    * I've included the scripts in this code drop that I use, but they are all
      pretty much hardwired for my system. No attempt has yet been made to
@@ -63,3 +68,31 @@ Style TabletPC_Applet_Menu NeverFocus, StaysOnTop, Sticky, !Button 4, !Button 2,
 
 If you find a use for it or want to fix it up, go right ahead. I might do that,
 too, if time allows, but right now I'm pretty swamped with school work.
+
+## Licensing
+
+All images are currently my own work, and are licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/legalcode)
+(Creative Commons Attribution-ShareAlike).
+
+I have decided to license this software under the terms of the commonly used
+MIT license, which I have reproduced below:
+
+> Copyright 2019 Wyatt Ward.
+> 
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
+> 
+> The above copyright notice and this permission notice shall be included in
+> all copies or substantial portions of the Software.
+> 
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+> SOFTWARE.

@@ -21,20 +21,30 @@ class TabletApplet(Gtk.Window):
         button=Gtk.Button()
         img=Gtk.Image.new_from_file('icons/winswitch_'+btnsize+'.png')
         button.add(img)
+        button.set_tooltip_text("Window Switcher")
         button.connect("clicked", self.winList)
         vbox.pack_start(button, True, True, 0)
         
-        button=Gtk.Button(label="\nKeyboard\n")
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/keyboard_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Toggle on-screen keyboard")
         button.connect("clicked", self.toggleKeybd)
         vbox.pack_start(button, True, True, 0)
 
 #       touch digitizer on/off
-        button=Gtk.Button(label="\nTouch\n")
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/touch_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Turn touch digitizer on and off")
         button.connect("clicked", self.toggleTouch)
         vbox.pack_start(button, True, True, 0)
 
 #       unclutter on/off
-        button=Gtk.Button(label="Unclutter")
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/unclutter_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Turn 'unclutter' on and off")
         button.connect("clicked", self.toggleUnclutter)
         vbox.pack_start(button, True, True, 0)
 
@@ -42,6 +52,7 @@ class TabletApplet(Gtk.Window):
         button=Gtk.Button()
         img=Gtk.Image.new_from_file('icons/brightness-up_'+btnsize+'.png')
         button.add(img)
+        button.set_tooltip_text("Raise brightness")
         button.connect("clicked", self.brtUp)
         vbox.pack_start(button, True, True, 0)
 
@@ -49,15 +60,20 @@ class TabletApplet(Gtk.Window):
         button=Gtk.Button()
         img=Gtk.Image.new_from_file('icons/brightness-down_'+btnsize+'.png')
         button.add(img)
+        button.set_tooltip_text("Lower brightness")
         button.connect("clicked", self.brtDown)
         vbox.pack_start(button, True, True, 0)
 
 #       calibrate
-        button=Gtk.Button(label="\n Calibrate \n")
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/calib_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Fix digitizer calibration")
         button.connect("clicked", self.calib)
         vbox.pack_start(button, True, True, 0)
 
         button=Gtk.Button(label=" ✖ ")
+        button.set_tooltip_text("Close tablet buttons")
         button.connect("clicked", Gtk.main_quit)
         vbox.pack_start(button, True, True, 0)
 #        self.add(self.btnKeybd)
@@ -89,7 +105,7 @@ win=TabletApplet()
 win.connect("destroy", Gtk.main_quit)
 scr=Gdk.Display.get_default().get_default_screen()
 # very wm specific hardcoded geometry stuff here
-win.move(0, scr.get_height() - (win.get_size().height) / 2 + 32)
+win.move(0, scr.get_height() - (win.get_size().height) / 2 + 40)
 #print(scr.get_height())
 #print(win.get_scale_factor())
 win.show_all()
