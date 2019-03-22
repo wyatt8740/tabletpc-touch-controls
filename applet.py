@@ -73,7 +73,6 @@ class TabletApplet(Gtk.Window):
         vbox.pack_start(button, True, True, 0)
 
         button=Gtk.Button(label=" ✖ ")
-        button.set_tooltip_text("Close tablet buttons")
         button.connect("clicked", Gtk.main_quit)
         vbox.pack_start(button, True, True, 0)
 #        self.add(self.btnKeybd)
