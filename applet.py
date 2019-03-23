@@ -48,14 +48,6 @@ class TabletApplet(Gtk.Window):
         button.connect("clicked", self.toggleUnclutter)
         vbox.pack_start(button, True, True, 0)
 
-#       brightness up
-        button=Gtk.Button()
-        img=Gtk.Image.new_from_file('icons/brightness-up_'+btnsize+'.png')
-        button.add(img)
-        button.set_tooltip_text("Raise brightness")
-        button.connect("clicked", self.brtUp)
-        vbox.pack_start(button, True, True, 0)
-
 #       brightness down
         button=Gtk.Button()
         img=Gtk.Image.new_from_file('icons/brightness-down_'+btnsize+'.png')
@@ -64,6 +56,14 @@ class TabletApplet(Gtk.Window):
         button.connect("clicked", self.brtDown)
         vbox.pack_start(button, True, True, 0)
 
+#       brightness up
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/brightness-up_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Raise brightness")
+        button.connect("clicked", self.brtUp)
+        vbox.pack_start(button, True, True, 0)
+        
 #       calibrate
         button=Gtk.Button()
         img=Gtk.Image.new_from_file('icons/calib_'+btnsize+'.png')
