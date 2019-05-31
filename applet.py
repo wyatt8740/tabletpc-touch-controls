@@ -64,12 +64,20 @@ class TabletApplet(Gtk.Window):
         button.connect("clicked", self.brtUp)
         vbox.pack_start(button, True, True, 0)
         
+#       automatically calibrate
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/calibreset_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Automatically fix digitizer calibration")
+        button.connect("clicked", self.calib)
+        vbox.pack_start(button, True, True, 0)
+
 #       calibrate
         button=Gtk.Button()
         img=Gtk.Image.new_from_file('icons/calib_'+btnsize+'.png')
         button.add(img)
         button.set_tooltip_text("Fix digitizer calibration")
-        button.connect("clicked", self.calib)
+        button.connect("clicked", self.calibManual)
         vbox.pack_start(button, True, True, 0)
 
         button=Gtk.Button(label=" ✖ ")
@@ -99,6 +107,9 @@ class TabletApplet(Gtk.Window):
 
     def calib(self, widget):
         subprocess.run("calib")
+
+    def calibManual(self, widget):
+        subprocess.run("wacomCalib1")
 
 win=TabletApplet()
 win.connect("destroy", Gtk.main_quit)
