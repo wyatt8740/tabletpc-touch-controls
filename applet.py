@@ -2,7 +2,7 @@
 import gi
 import subprocess # to execute appropriate scripts/programs
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GObject
 
 btnsize="32" # change this to change the size of button icons.
 
@@ -64,20 +64,22 @@ class TabletApplet(Gtk.Window):
         button.connect("clicked", self.brtUp)
         vbox.pack_start(button, True, True, 0)
         
-#       automatically calibrate
-        button=Gtk.Button()
-        img=Gtk.Image.new_from_file('icons/calibreset_'+btnsize+'.png')
-        button.add(img)
-        button.set_tooltip_text("Automatically fix digitizer calibration")
-        button.connect("clicked", self.calib)
-        vbox.pack_start(button, True, True, 0)
+##       automatically calibrate
+#        button=Gtk.Button()
+#        img=Gtk.Image.new_from_file('icons/calibreset_'+btnsize+'.png')
+#        button.add(img)
+#        button.set_tooltip_text("Automatically fix digitizer calibration")
+#        button.connect("clicked", self.calib)
+#        vbox.pack_start(button, True, True, 0)
 
 #       calibrate
-        button=Gtk.Button()
+        button=HoldButton()
         img=Gtk.Image.new_from_file('icons/calib_'+btnsize+'.png')
         button.add(img)
         button.set_tooltip_text("Fix digitizer calibration")
-        button.connect("clicked", self.calibManual)
+        button.connect("clicked", self.calib)
+#        button.connect("held", self.calibManual)
+        button.connect("held", self.spawnCalibMenu)
         vbox.pack_start(button, True, True, 0)
 
         button=Gtk.Button(label=" ✖ ")
@@ -111,8 +113,88 @@ class TabletApplet(Gtk.Window):
     def calibManual(self, widget):
         subprocess.run("wacomCalib1")
 
+    def spawnCalibMenu(self, widget):
+        winCalib.show_all()
+        
+class HoldButton(Gtk.Button):
+
+    __gsignals__ = { 'held' : (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, ()) }
+
+    def __init__(self, label=None, stock=None, use_underline=True):
+        Gtk.Button.__init__(self, label, stock, use_underline)
+        self.connect('pressed', HoldButton.h_pressed)
+        self.connect('clicked', HoldButton.h_clicked)
+        self.timeout_id = None
+
+    def h_clicked(self):
+        if self.timeout_id:
+            GObject.source_remove(self.timeout_id)
+            self.timeout_id = None
+        else:
+            self.stop_emission('clicked')
+
+    def h_pressed(self):
+        self.timeout_id = GObject.timeout_add(750, HoldButton.h_timeout, self)
+
+    def h_timeout(self):
+        self.timeout_id = None
+        self.emit('held')
+#        print("HELD BUTTON DOWN")
+        return False
+
+class TabletApplet_CalibMenu(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, title="Calibration")
+        self.set_wmclass(APP_NAME,APP_NAME)
+
+#        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(vbox)
+
+        button=Gtk.Button(label=" ✖ ")
+        button.connect("clicked", self.closeCalibMenu)
+        vbox.pack_start(button, True, True, 0)
+
+#       automatically calibrate
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/calibreset_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Automatically fix digitizer calibration with preset values")
+        button.connect("clicked", self.calib)
+        vbox.pack_start(button, True, True, 0)
+
+#       calibrate
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/calib_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Fix digitizer stylus calibration")
+        button.connect("clicked", self.calibManual)
+        vbox.pack_start(button, True, True, 0)
+
+#       calibrate touch
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/calibtouch_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Fix digitizer calibration for touch")
+        button.connect("clicked", self.calibManualTouch)
+        vbox.pack_start(button, True, True, 0)
+
+    def calib(self, widget):
+        subprocess.run("calib")
+
+    def calibManual(self, widget):
+        subprocess.run("wacomCalibStylus")
+
+    def calibManualTouch(self, widget):
+        subprocess.run("wacomCalibTouch")
+
+    def closeCalibMenu(self, widget):
+        self.hide()
+    
 win=TabletApplet()
 win.connect("destroy", Gtk.main_quit)
+winCalib=TabletApplet_CalibMenu()
+winCalib.connect("destroy", winCalib.closeCalibMenu)
 scr=Gdk.Display.get_default().get_default_screen()
 # very wm specific hardcoded geometry stuff here
 win.move(0, scr.get_height() - (win.get_size().height) / 2 + 40)
