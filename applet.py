@@ -2,7 +2,58 @@
 import gi
 import subprocess # to execute appropriate scripts/programs
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gtk, Gdk, GObject, GLib
+
+# GTK3 is deprecating lots of things I depend on, like display geometry
+# info, so let's just use XCB for it instead.
+# RIP cross platform. Blame GTK3 for being stupid & deprecating nice things
+import xcffib
+import xcffib.xproto
+import os # for os.environ to get DISPLAY variable
+import sys # sys.exit
+
+## All this for WM class naming?! I think I'll use the deprecated GTK
+## function for now.
+# from xpybutil import util
+# from xpybutil.compat import xproto
+# from xpybutil import conn as c
+# __atoms = ['WM_PROTOCOLS', 'WM_TAKE_FOCUS', 'WM_SAVE_YOURSELF',
+# 'WM_DELETE_WINDOW', 'WM_COLORMAP_WINDOWS', 'WM_STATE']
+# atoms=xproto.Atom
+#def get_wm_class(window):
+#    return util.PropertyCookie(util.get_property(window, atoms.WM_CLASS))
+
+#def set_wm_class(window, instance, cls):
+#    return c.core.ChangeProperty(xproto.PropMode.Replace, window,
+#                                 atoms.WM_CLASS, atoms.STRING, 8,
+#                                 len(instance) + len(cls) + 2,
+#                                 instance + chr(0) + cls + chr(0))
+
+#def set_wm_class_checked(window, instance, cls):
+#    return c.core.ChangePropertyChecked(xproto.PropMode.Replace, window,
+#                                        atoms.WM_CLASS, atoms.STRING, 8,
+#                                        len(instance) + len(cls) + 2,
+#                                        instance + chr(0) + cls + chr(0))
+
+
+
+display = os.environ.get("DISPLAY")
+if not display:
+    display = ":0"
+    print("DISPLAY variable was not set. Trying DISPLAY=':0'.")
+try:
+    xconn=xcffib.connect(display=os.environ['DISPLAY'])
+except xcffib.ConnectionException:
+    sys.exit("Cannot connect to display %s" % display)
+
+setup=xconn.get_setup()
+# Root window ID
+root=setup.roots[0].root
+# xproto
+proto=xcffib.xproto.xprotoExtension(xconn)
+# Fetch dimensions of root window (display size)
+geomcookie=proto.GetGeometry(root)
+dispgeom=geomcookie.reply()
 
 btnsize="32" # change this to change the size of button icons.
 
@@ -12,7 +63,8 @@ class TabletApplet(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Tablet Controls")
         self.set_wmclass(APP_NAME,APP_NAME)
-
+#        b=get_wm_class(60817411).reply()
+#         set_wm_class(60817411, "TabletPC_Applet_Menu", "TabletPC_Applet_Menu")
 #        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         vbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.add(vbox)
@@ -85,9 +137,6 @@ class TabletApplet(Gtk.Window):
         button=Gtk.Button(label=" ✖ ")
         button.connect("clicked", Gtk.main_quit)
         vbox.pack_start(button, True, True, 0)
-#        self.add(self.btnKeybd)
-#        self.add(self.btnTouch)
-#        self.add(self.btnExit)
 
     def toggleKeybd(self, widget):
         subprocess.run("osk-toggle")
@@ -118,10 +167,11 @@ class TabletApplet(Gtk.Window):
         
 class HoldButton(Gtk.Button):
 
-    __gsignals__ = { 'held' : (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, ()) }
+#    __gsignals__ = { 'held' : (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, ()) }
+    __gsignals__ = { 'held' : (GObject.SignalFlags.RUN_LAST, GObject.TYPE_NONE, ()) }
 
     def __init__(self, label=None, stock=None, use_underline=True):
-        Gtk.Button.__init__(self, label, stock, use_underline)
+        Gtk.Button.__init__(self, label=label, stock=stock, use_underline=use_underline)
         self.connect('pressed', HoldButton.h_pressed)
         self.connect('clicked', HoldButton.h_clicked)
         self.timeout_id = None
@@ -131,15 +181,14 @@ class HoldButton(Gtk.Button):
             GObject.source_remove(self.timeout_id)
             self.timeout_id = None
         else:
-            self.stop_emission('clicked')
+            self.stop_emission_by_name('clicked')
 
     def h_pressed(self):
-        self.timeout_id = GObject.timeout_add(750, HoldButton.h_timeout, self)
+        self.timeout_id = GLib.timeout_add(500, HoldButton.h_timeout, self)
 
     def h_timeout(self):
         self.timeout_id = None
         self.emit('held')
-#        print("HELD BUTTON DOWN")
         return False
 
 class TabletApplet_CalibMenu(Gtk.Window):
@@ -147,7 +196,6 @@ class TabletApplet_CalibMenu(Gtk.Window):
         Gtk.Window.__init__(self, title="Calibration")
         self.set_wmclass(APP_NAME,APP_NAME)
 
-#        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(vbox)
 
@@ -195,10 +243,20 @@ win=TabletApplet()
 win.connect("destroy", Gtk.main_quit)
 winCalib=TabletApplet_CalibMenu()
 winCalib.connect("destroy", winCalib.closeCalibMenu)
-scr=Gdk.Display.get_default().get_default_screen()
-# very wm specific hardcoded geometry stuff here
-win.move(0, scr.get_height() - (win.get_size().height) / 2 + 40)
-#print(scr.get_height())
-#print(win.get_scale_factor())
+
+## I had to replace this following two lines with all of the XCB crap above
+## on account of GTK3 deprecating the get_height() function
+# scr=Gdk.Display.get_default().get_default_screen()
+# win.move(0, scr.get_height() - (win.get_size().height) / 2 + 40)
+## very wm specific hardcoded geometry stuff here
+## 40 appears to be our magic number, for some reason. DON'T QUESTION IT
+win.move(0, dispgeom.height - win.get_size().height / 2 + 40)
+
+
 win.show_all()
+# now we have accurate sizes for the main panel, we can set a position for
+# the popup panel. Before showing we have no idea how many pixels things
+# take
+## 40 appears to be our magic number, for some reason. DON'T QUESTION IT
+winCalib.move(Gtk.Window.get_size(win).width, dispgeom.height - winCalib.get_size().height + 40)
 Gtk.main()
