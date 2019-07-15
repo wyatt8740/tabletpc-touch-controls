@@ -36,7 +36,6 @@ import sys # sys.exit
 #                                        instance + chr(0) + cls + chr(0))
 
 
-
 display = os.environ.get("DISPLAY")
 if not display:
     display = ":0"
@@ -62,6 +61,25 @@ APP_NAME="TabletPC_Applet_Menu"
 class TabletApplet(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Tablet Controls")
+
+
+        cssProvider=Gtk.CssProvider()
+        cssProvider.load_from_path('style.css')
+        screen = Gdk.Screen.get_default()
+        styleContext = Gtk.StyleContext()
+        styleContext.add_provider_for_screen(screen, cssProvider,
+                                             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        css = b"""
+        button {
+          background: #424242;
+          border-color: #282828;
+        }
+        button:active {
+          background: #242424;
+          border-color: #808080;
+        }
+        """
+        cssProvider.load_from_data(css)
         self.set_wmclass(APP_NAME,APP_NAME)
 #        b=get_wm_class(60817411).reply()
 #         set_wm_class(60817411, "TabletPC_Applet_Menu", "TabletPC_Applet_Menu")
@@ -115,7 +133,14 @@ class TabletApplet(Gtk.Window):
         button.set_tooltip_text("Raise brightness")
         button.connect("clicked", self.brtUp)
         vbox.pack_start(button, True, True, 0)
-        
+
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/volume_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Master volume")
+        button.connect("clicked", self.spawnVolumeMenu)
+        vbox.pack_start(button, True, True, 0)
+
 ##       automatically calibrate
 #        button=Gtk.Button()
 #        img=Gtk.Image.new_from_file('icons/calibreset_'+btnsize+'.png')
@@ -132,6 +157,14 @@ class TabletApplet(Gtk.Window):
         button.connect("clicked", self.calib)
 #        button.connect("held", self.calibManual)
         button.connect("held", self.spawnCalibMenu)
+        vbox.pack_start(button, True, True, 0)
+
+#       launch mcomix-touchnav script (which I wrote ages ago in tkinter)
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/mcomix_touchnav_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Launch mcomix-touchnav")
+        button.connect("clicked", self.mcomixtouchnav)
         vbox.pack_start(button, True, True, 0)
 
         button=Gtk.Button(label=" ✖ ")
@@ -152,19 +185,23 @@ class TabletApplet(Gtk.Window):
 
     def brtDown(self, widget):
         subprocess.run("brightdown_acpi")
+
+    def calib(self, widget):
+        subprocess.run("calib")
         
     def toggleUnclutter(self, widget):
         subprocess.run("uc-toggle")
 
-    def calib(self, widget):
-        subprocess.run("calib")
-
-    def calibManual(self, widget):
-        subprocess.run("wacomCalib1")
-
     def spawnCalibMenu(self, widget):
         winCalib.show_all()
-        
+
+    def spawnVolumeMenu(self, widget):
+        winVolume.show_all()
+
+    def mcomixtouchnav(self, widget):
+        subprocess.Popen(["mcomix-touchnav"])
+    #   subprocess.run() blocks and I don't want to write a wrapper script.
+
 class HoldButton(Gtk.Button):
 
 #    __gsignals__ = { 'held' : (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, ()) }
@@ -227,22 +264,64 @@ class TabletApplet_CalibMenu(Gtk.Window):
         button.connect("clicked", self.calibManualTouch)
         vbox.pack_start(button, True, True, 0)
 
+    def closeCalibMenu(self, widget):
+        self.hide()
+
     def calib(self, widget):
         subprocess.run("calib")
 
     def calibManual(self, widget):
-        subprocess.run("wacomCalibStylus")
+        subprocess.run("wacomCalib1")
 
     def calibManualTouch(self, widget):
         subprocess.run("wacomCalibTouch")
 
-    def closeCalibMenu(self, widget):
+
+class TabletApplet_VolumeMenu(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, title="Calibration")
+        self.set_wmclass(APP_NAME,APP_NAME)
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(vbox)
+
+        button=Gtk.Button(label=" ✖ ")
+        button.connect("clicked", self.closeVolumeMenu)
+        vbox.pack_start(button, True, True, 0)
+
+#       volume up
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/volup_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Raise volume")
+        button.connect("clicked", self.volUp)
+        vbox.pack_start(button, True, True, 0)
+
+#       volume down
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/voldown_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Lower volume")
+        button.connect("clicked", self.volDown)
+        vbox.pack_start(button, True, True, 0)
+
+    def volUp(self, widget):
+        subprocess.run("volup")
+
+    def volDown(self, widget):
+        subprocess.run("voldown")
+
+    def closeVolumeMenu(self, widget):
         self.hide()
-    
+
 win=TabletApplet()
 win.connect("destroy", Gtk.main_quit)
 winCalib=TabletApplet_CalibMenu()
 winCalib.connect("destroy", winCalib.closeCalibMenu)
+winVolume=TabletApplet_VolumeMenu()
+winVolume.connect("destroy", winVolume.closeVolumeMenu)
+
+# window placement appears to be some form of deep magic I don't understand.
 
 ## I had to replace this following two lines with all of the XCB crap above
 ## on account of GTK3 deprecating the get_height() function
@@ -250,13 +329,19 @@ winCalib.connect("destroy", winCalib.closeCalibMenu)
 # win.move(0, scr.get_height() - (win.get_size().height) / 2 + 40)
 ## very wm specific hardcoded geometry stuff here
 ## 40 appears to be our magic number, for some reason. DON'T QUESTION IT
-win.move(0, dispgeom.height - win.get_size().height / 2 + 40)
 
+#win.move(0, dispgeom.height - win.get_size().height / 2 + 40)
+
+# fvwm removing the titlebar throws that off. It's 60 now.
+win.move(0, dispgeom.height - win.get_size().height / 2 + 60)
 
 win.show_all()
 # now we have accurate sizes for the main panel, we can set a position for
 # the popup panel. Before showing we have no idea how many pixels things
 # take
 ## 40 appears to be our magic number, for some reason. DON'T QUESTION IT
-winCalib.move(Gtk.Window.get_size(win).width, dispgeom.height - winCalib.get_size().height + 40)
+# fvwm removing the titlebar throws that off. It's 60 now.
+winCalib.move(Gtk.Window.get_size(win).width, dispgeom.height - winCalib.get_size().height + 60)
+
+winVolume.move(Gtk.Window.get_size(win).width, dispgeom.height - winVolume.get_size().height + 99)
 Gtk.main()
