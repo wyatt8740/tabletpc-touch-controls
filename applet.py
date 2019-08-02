@@ -102,13 +102,13 @@ class TabletApplet(Gtk.Window):
         button.connect("clicked", self.toggleKeybd)
         vbox.pack_start(button, True, True, 0)
 
-#       touch digitizer on/off
-        button=Gtk.Button()
-        img=Gtk.Image.new_from_file('icons/touch_'+btnsize+'.png')
-        button.add(img)
-        button.set_tooltip_text("Turn touch digitizer on and off")
-        button.connect("clicked", self.toggleTouch)
-        vbox.pack_start(button, True, True, 0)
+# #       touch digitizer on/off
+#         button=Gtk.Button()
+#         img=Gtk.Image.new_from_file('icons/touch_'+btnsize+'.png')
+#         button.add(img)
+#         button.set_tooltip_text("Turn touch digitizer on and off")
+#         button.connect("clicked", self.toggleTouch)
+#         vbox.pack_start(button, True, True, 0)
 
 #       unclutter on/off
         button=Gtk.Button()
@@ -118,20 +118,12 @@ class TabletApplet(Gtk.Window):
         button.connect("clicked", self.toggleUnclutter)
         vbox.pack_start(button, True, True, 0)
 
-#       brightness down
+#       Display/Brightness menu
         button=Gtk.Button()
-        img=Gtk.Image.new_from_file('icons/brightness-down_'+btnsize+'.png')
+        img=Gtk.Image.new_from_file('icons/brightness_'+btnsize+'.png')
         button.add(img)
-        button.set_tooltip_text("Lower brightness")
-        button.connect("clicked", self.brtDown)
-        vbox.pack_start(button, True, True, 0)
-
-#       brightness up
-        button=Gtk.Button()
-        img=Gtk.Image.new_from_file('icons/brightness-up_'+btnsize+'.png')
-        button.add(img)
-        button.set_tooltip_text("Raise brightness")
-        button.connect("clicked", self.brtUp)
+        button.set_tooltip_text("Brightness & display")
+        button.connect("clicked", self.spawnDisplayMenu)
         vbox.pack_start(button, True, True, 0)
 
         button=Gtk.Button()
@@ -180,12 +172,6 @@ class TabletApplet(Gtk.Window):
     def winList(self, widget):
         subprocess.run(["FvwmCommand", "WindowList Root c c CurrentDesk"])
 
-    def brtUp(self, widget):
-        subprocess.run("brightup_acpi")
-
-    def brtDown(self, widget):
-        subprocess.run("brightdown_acpi")
-
     def calib(self, widget):
         subprocess.run("calib")
         
@@ -198,9 +184,15 @@ class TabletApplet(Gtk.Window):
     def spawnVolumeMenu(self, widget):
         winVolume.show_all()
 
+    def spawnDisplayMenu(self, widget):
+        winDisplay.show_all()
+
     def mcomixtouchnav(self, widget):
-        subprocess.Popen(["mcomix-touchnav"])
+        subprocess.run("mcomix-touchnav-toggle")
+    #   subprocess.Popen(["mcomix-touchnav"])
     #   subprocess.run() blocks and I don't want to write a wrapper script.
+    #   (edit: wrote a wrapper script Which launches and disowns touchnav,
+    #          and also kills it if run again)
 
 class HoldButton(Gtk.Button):
 
@@ -276,10 +268,9 @@ class TabletApplet_CalibMenu(Gtk.Window):
     def calibManualTouch(self, widget):
         subprocess.run("wacomCalibTouch")
 
-
 class TabletApplet_VolumeMenu(Gtk.Window):
     def __init__(self):
-        Gtk.Window.__init__(self, title="Calibration")
+        Gtk.Window.__init__(self, title="Volume")
         self.set_wmclass(APP_NAME,APP_NAME)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -304,14 +295,84 @@ class TabletApplet_VolumeMenu(Gtk.Window):
         button.set_tooltip_text("Lower volume")
         button.connect("clicked", self.volDown)
         vbox.pack_start(button, True, True, 0)
+        
+    def volDown(self, widget):
+        subprocess.run("voldown")
 
     def volUp(self, widget):
         subprocess.run("volup")
 
-    def volDown(self, widget):
-        subprocess.run("voldown")
-
     def closeVolumeMenu(self, widget):
+        self.hide()
+
+class TabletApplet_DisplayMenu(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, title="Display")
+        self.set_wmclass(APP_NAME,APP_NAME)
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(vbox)
+
+        button=Gtk.Button(label=" ✖ ")
+        button.connect("clicked", self.closeDisplayMenu)
+        vbox.pack_start(button, True, True, 0)
+
+#       brightness up
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/brightness-up_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Raise brightness")
+        button.connect("clicked", self.brtUp)
+        vbox.pack_start(button, True, True, 0)
+
+#       brightness down
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/brightness-down_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Lower brightness")
+        button.connect("clicked", self.brtDown)
+        vbox.pack_start(button, True, True, 0)
+
+#       gamma up
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/gamma-up_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Raise gamma")
+        button.connect("clicked", self.gamUp)
+        vbox.pack_start(button, True, True, 0)
+
+#       gamma reset
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/gamma-reset_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Reset gamma")
+        button.connect('clicked', self.gamReset)
+        vbox.pack_start(button, True, True, 0)
+
+#       gamma down
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/gamma-down_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("Lower gamma")
+        button.connect("clicked", self.gamDown)
+        vbox.pack_start(button, True, True, 0)
+
+    def brtUp(self, widget):
+        subprocess.run("brightup_acpi")
+
+    def brtDown(self, widget):
+        subprocess.run("brightdown_acpi")
+
+    def gamDown(self, widget):
+        subprocess.run("gammadown")
+
+    def gamUp(self, widget):
+        subprocess.run("gammaup")
+
+    def gamReset(self, widget):
+        subprocess.run("gammareset")
+
+    def closeDisplayMenu(self, widget):
         self.hide()
 
 win=TabletApplet()
@@ -320,6 +381,8 @@ winCalib=TabletApplet_CalibMenu()
 winCalib.connect("destroy", winCalib.closeCalibMenu)
 winVolume=TabletApplet_VolumeMenu()
 winVolume.connect("destroy", winVolume.closeVolumeMenu)
+winDisplay=TabletApplet_DisplayMenu()
+winDisplay.connect("destroy", winDisplay.closeDisplayMenu)
 
 # window placement appears to be some form of deep magic I don't understand.
 
@@ -344,4 +407,6 @@ win.show_all()
 winCalib.move(Gtk.Window.get_size(win).width, dispgeom.height - winCalib.get_size().height + 60)
 
 winVolume.move(Gtk.Window.get_size(win).width, dispgeom.height - winVolume.get_size().height + 99)
+
+winDisplay.move(Gtk.Window.get_size(win).width, dispgeom.height - winDisplay.get_size().height - 21)
 Gtk.main()
