@@ -88,11 +88,12 @@ class TabletApplet(Gtk.Window):
         self.add(vbox)
 
 #        button=Gtk.Button(label="Window Switcher")
-        button=Gtk.Button()
+        button=HoldButton()
         img=Gtk.Image.new_from_file('icons/winswitch_'+btnsize+'.png')
         button.add(img)
         button.set_tooltip_text("Window Switcher")
         button.connect("clicked", self.winList)
+        button.connect("held", self.spawnWMMenu)
         vbox.pack_start(button, True, True, 0)
         
         button=Gtk.Button()
@@ -178,6 +179,9 @@ class TabletApplet(Gtk.Window):
     def toggleUnclutter(self, widget):
         subprocess.run("uc-toggle")
 
+    def spawnWMMenu(self, widget):
+        winWM.show_all()
+        
     def spawnCalibMenu(self, widget):
         winCalib.show_all()
 
@@ -263,7 +267,7 @@ class TabletApplet_CalibMenu(Gtk.Window):
         subprocess.run("calib")
 
     def calibManual(self, widget):
-        subprocess.run("wacomCalib1")
+        subprocess.run("wacomCalibStylus")
 
     def calibManualTouch(self, widget):
         subprocess.run("wacomCalibTouch")
@@ -375,6 +379,33 @@ class TabletApplet_DisplayMenu(Gtk.Window):
     def closeDisplayMenu(self, widget):
         self.hide()
 
+class TabletApplet_WMMenu(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, title="WM Tools")
+        self.set_wmclass(APP_NAME,APP_NAME)
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(vbox)
+
+        button=Gtk.Button(label=" ✖ ")
+        button.connect("clicked", self.closeWMMenu)
+        vbox.pack_start(button, True, True, 0)
+
+#       Max
+        button=Gtk.Button()
+        img=Gtk.Image.new_from_file('icons/wm_max_'+btnsize+'.png')
+        button.add(img)
+        button.set_tooltip_text("(Un)Maximize")
+        button.connect("clicked", self.wmMax)
+        vbox.pack_start(button, True, True, 0)
+        
+    def wmMax(self, widget):
+#        subprocess.run(["FvwmCommand", "Current Maximize ewmhiwa"])
+        subprocess.run("maxwindow")
+
+    def closeWMMenu(self, widget):
+        self.hide()
+
 win=TabletApplet()
 win.connect("destroy", Gtk.main_quit)
 winCalib=TabletApplet_CalibMenu()
@@ -383,6 +414,8 @@ winVolume=TabletApplet_VolumeMenu()
 winVolume.connect("destroy", winVolume.closeVolumeMenu)
 winDisplay=TabletApplet_DisplayMenu()
 winDisplay.connect("destroy", winDisplay.closeDisplayMenu)
+winWM=TabletApplet_WMMenu()
+winWM.connect("destroy",winWM.closeWMMenu)
 
 # window placement appears to be some form of deep magic I don't understand.
 
@@ -409,4 +442,7 @@ winCalib.move(Gtk.Window.get_size(win).width, dispgeom.height - winCalib.get_siz
 winVolume.move(Gtk.Window.get_size(win).width, dispgeom.height - winVolume.get_size().height + 99)
 
 winDisplay.move(Gtk.Window.get_size(win).width, dispgeom.height - winDisplay.get_size().height - 21)
+
+winWM.move(Gtk.Window.get_size(win).width, dispgeom.height - winCalib.get_size().height + 139)
+
 Gtk.main()
