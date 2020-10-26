@@ -176,6 +176,8 @@ class TabletApplet(Gtk.Window):
         # dialogue on alt-shift-tab, and be set up to not automatically
         # close it on key-release. It's a workaround for me since
         # FVWM3 doesn't have an 'FvwmCommand' equivalent (from fvwm2) for now.
+        # FVWM3 config line to make this work:
+        # Silent Key Tab A SM WindowList Root c c CurrentDesk, SelectOnRelease
         # Fvwm2 command (alternative to above):
         # subprocess.run(["FvwmCommand", "WindowList Root c c CurrentDesk"])
 
