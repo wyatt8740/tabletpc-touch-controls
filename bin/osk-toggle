@@ -3,10 +3,11 @@
 DISPLAY=:0
 export DISPLAY=:0
 PROGNAME="xvkbd"
+ARGS="-secure"
 # PROGNAME="florence"
 if [ -z `/usr/bin/pgrep "$PROGNAME"` ]; then
     #zenity --info --text="florence not running. Starting."
-    "$PROGNAME" & disown
+    "$PROGNAME" $ARGS & disown
 else
     #zenity --info --text="florence is running"
     pkill "$PROGNAME"
