@@ -171,6 +171,7 @@ class TabletApplet(Gtk.Window):
         subprocess.run("touchscreen-toggle")
 
     def winList(self, widget):
+        # post-FvwmCommand removal in FVWM3, pre-FvwmPrompt introduction solution:
         subprocess.run(["xdotool","keydown","alt","keydown","shift","key","Tab","keyup","alt","keyup","shift"])
         # for this method to work your WM needs to pop up a window lister
         # dialogue on alt-shift-tab, and be set up to not automatically
@@ -180,6 +181,8 @@ class TabletApplet(Gtk.Window):
         # Silent Key Tab A SM WindowList Root c c CurrentDesk, SelectOnRelease
         # Fvwm2 command (alternative to above):
         # subprocess.run(["FvwmCommand", "WindowList Root c c CurrentDesk"])
+        # Fvwm3 command (using the new FvwmPrompt unix socket implementation via a shellscript called FvwmCommand):
+#        subprocess.run(["FvwmCommand", "WindowList Root c c CurrentDesk"])
 
     def calib(self, widget):
         subprocess.run("calib")

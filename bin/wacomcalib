@@ -1,0 +1,100 @@
+#! /usr/bin/ksh
+# calib
+#xsetwacom set 'Wacom Serial Penabled 2FG Touchscreen Pen stylus' \
+#          Area 0 137 26130 16293
+# min_X min_Y max_X max_Y
+
+# less parsing to do later if we just snag the device name now (if available)
+case "$#" in
+  1)
+    devicename="$1"
+    ;;
+  5)
+    devicename="$1"
+    ;;
+  *)
+    devicename=""
+    ;;
+esac
+# This script remaps our arguments for consistency between xsetwacom and the
+# calibrator tool xinput_calibrator. It uses xsetwacom format. It acts as
+# a translator to avoid user confusion (meaning: to avoid my own confusion).
+
+# the docalib function gets piped into a loop that reads the output of
+# xinput_calibrator line-by-line to scrape the information we need.
+docalib(){
+  case "$#" in
+    0) 
+      xinput_calibrator
+      ;;
+    1)
+      xinput_calibrator --device "$1"
+      ;;
+    4)
+      # xinput_calibrator takes precalib in form of: min_x max_x min_y max_y.
+      # Unfortunately, xsetwacom uses the form of:   min_x min_y max_x max_y.
+      # so we swap the middle two parameters from the order passed.
+      # (When we are done, the script returns in xsetwacom format)
+      xinput_calibrator --precalib "$1" "$3" "$2" "$4"
+      ;;
+    5)
+      xinput_calibrator --device "$1" --precalib "$2" "$4" "$3" "$5"
+      ;;
+    *)
+      >&2 echo "Wrong number of arguments given. Should be one of:"
+      >&2 echo "    0 - use defaults for everything."
+      >&2 echo "    1 - Specify a device name."
+      >&2 echo "    4 - Enter previous calibration settings."
+      >&2 echo "    5 - Specify a device name followed by previous calibration settings."
+      >&2 echo "Calibration settings should be passed in the order of:"
+      >&2 echo "    TopLeftX TopLeftY BottomRightX BottomRightY"
+      >&2 echo 
+      >&2 echo "Please try again."
+      exit
+      ;;
+  esac
+}
+
+
+
+# 0	137	26130	16293
+# min_X	min_Y	max_X	max_Y
+MinX="ERROR"
+MinY="ERROR"
+MaxX="ERROR"
+MaxY="ERROR"
+docalib "$@" | \
+  while read line; do
+    echo "$line" | grep -q '^Calibrating standard Xorg driver'
+    if [ "$?" -eq 0 ]; then
+      if [ -z "$devicename" ]; then
+        devicename="$(echo "$line" | cut -d\  -f5- | sed 's/"//g')"
+      fi
+    fi
+    echo "$line" | grep -q '^Option'
+    if [ "$?" -eq 0 ]; then
+      
+      varname="$(echo "$line" | awk '{print $2}' | sed 's/"//g')"
+ #     echo "VARNAME: ""$varname"
+      varval="$(echo "$line" |  awk '{print $3}' | sed 's/"//g')"
+
+#      ksh/bash/zsh specific (not posix), but more powerful/versatile than the
+#      'case' method that follows. I tried to make this work using just eval,
+#      but couldn't, for some reason I cannot explain.
+
+#      typeset "$varname""=""$varval"
+      eval "$varname"="$varval"
+    fi
+  done
+
+if [ "$MinX" != "ERROR" ]; then
+  echo "Area (linuxwacom) [xf86-input-wacom]:    value"
+  echo "x1   (MinX)       [TopX]            :    ""$MinX" # top left X
+  echo "y1   (MinY)       [TopY]            :    ""$MinY" # top left Y
+  echo "x2   (MaxX)       [BottomX]         :    ""$MaxX" # bottom right X
+  echo "y2   (MaxY)       [BottomY]         :    ""$MaxY" # bottom right Y
+  echo 
+  echo "To apply this calibration, run:"
+  echo "xsetwacom set '""$devicename""' Area ""$MinX"" ""$MinY"" ""$MaxX"" ""$MaxY"
+fi
+

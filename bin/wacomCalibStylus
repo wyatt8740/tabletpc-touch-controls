@@ -1,0 +1,35 @@
+#! /usr/bin/ksh
+# reset to tabletpc defaults before customizations:
+#min_x=0, max_x=26312 and min_y=0, max_y=16520
+# trailing space matters:
+# TABNAMEPREFIX='Serial Wacom Tablet WACf00c '
+
+xsetwacom list devices | sed 's/\t.*//' | awk '{ print $3 }' | grep -q Tablet
+if [ "$?" -eq 0 ]; then # wacf00c bullshit if third word is tablet
+  BULLCRAP=1
+  TABNAMEPREFIX='Serial Wacom Tablet WACf00c '
+  TABNAMEPREFIXPEN=''
+  TABNAMEPREFIXTOUCH=''
+else
+  BULLCRAP=0
+  TABNAMEPREFIX='Wacom Serial Penabled 2FG Touchscreen '
+  TABNAMEPREFIXTOUCH='Finger ' # empty for WACf00c
+  TABNAMEPREFIXPEN='Pen ' #empty for WACf00c
+fi
+
+xsetwacom set "$TABNAMEPREFIX""$TABNAMEPREFIXPEN"'stylus' Area 0 0 26312 16520
+
+CALIBCMD="$(wacomcalib "$TABNAMEPREFIX""$TABNAMEPREFIXPEN"'stylus' | tail -n 1)"
+COORDS="$(echo "$CALIBCMD" | sed 's/^.*Area //')"
+
+#wacomcalib 'Wacom Serial Penabled 2FG Touchscreen Pen stylus'
+
+#CALIBCMD="$(wacomcalib 'Wacom Serial Penabled 2FG Touchscreen Pen stylus' 0 137 26130 16293 | tail -n 1)"
+#COORDS="$(echo "$CALIBCMD" | sed 's/^.*Area //')"
+
+
+echo "$COORDS" >> ~/.wacom_stylus_coords
+
+eval "$CALIBCMD"
+
+#xsetwacom set 'Wacom Serial Penabled 2FG Touchscreen Pen stylus' Area 0 0 26312 16520
